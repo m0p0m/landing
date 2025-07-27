@@ -1,4 +1,4 @@
-import User, { IUser } from '../entities/User';
+import User, { IUser } from '../entities/user.entity';
 
 class UserRepository {
   async create(user: Partial<IUser>): Promise<IUser> {

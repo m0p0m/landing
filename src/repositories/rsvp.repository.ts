@@ -1,4 +1,4 @@
-import RSVP, { IRSVP } from '../entities/RSVP';
+import RSVP, { IRSVP } from '../entities/rsvp.entity';
 import { Schema } from 'mongoose';
 
 class RSVPRepository {

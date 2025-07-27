@@ -1,4 +1,4 @@
-import Event, { IEvent } from '../entities/Event';
+import Event, { IEvent } from '../entities/event.entity';
 
 class EventRepository {
   async create(event: Partial<IEvent>): Promise<IEvent> {
@@ -22,6 +22,10 @@ class EventRepository {
 
   async delete(id: string): Promise<void> {
     await Event.findByIdAndDelete(id);
+  }
+
+  async search(query: string): Promise<IEvent[]> {
+    return Event.find({ $text: { $search: query } });
   }
 }
 
