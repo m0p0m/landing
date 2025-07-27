@@ -8,6 +8,14 @@ class UserRepository {
   async findByEmail(email: string): Promise<IUser | null> {
     return User.findOne({ email });
   }
+
+  async findById(id: string): Promise<IUser | null> {
+    return User.findById(id);
+  }
+
+  async update(id: string, user: Partial<IUser>): Promise<IUser | null> {
+    return User.findByIdAndUpdate(id, user, { new: true });
+  }
 }
 
 export default new UserRepository();

@@ -1,24 +1,16 @@
-# Real-Time Event Management Platform API
+# Comprehensive Real-Time Event Management Platform API
 
-This is a RESTful API for an event management platform that enables users to create events, RSVP to events, and chat within each event in real time.
+This is a robust, production-ready RESTful API for an event management platform. The platform allows users to create, manage, and RSVP to events, participate in real-time event-specific chats, manage their profiles, and process payments for premium events.
 
 ## Technologies
 
 -   **Node.js**: Backend server runtime.
--   **TypeScript**: For type-safe and maintainable code.
+-   **TypeScript**: For type-safe, maintainable code.
 -   **MongoDB**: Database, with Mongoose for schema management.
 -   **Express.js**: For routing and HTTP request handling.
 -   **Socket.IO**: For real-time chat and RSVP notifications.
 -   **JWT**: For secure user authentication.
-
-## Architecture
-
-The project follows clean architecture with the following layers:
-
--   **Entities**: Core data models (e.g., User, Event, RSVP).
--   **Use Cases**: Business logic (e.g., creating an event, sending a chat message).
--   **Controllers**: Handle HTTP requests and responses.
--   **Repositories**: Abstract database operations.
+-   **Stripe**: For payment processing.
 
 ## Getting Started
 
@@ -26,6 +18,7 @@ The project follows clean architecture with the following layers:
 
 -   Node.js
 -   MongoDB
+-   Stripe Account
 
 ### Installation
 
@@ -37,37 +30,40 @@ The project follows clean architecture with the following layers:
     ```sh
     npm install
     ```
-3.  Start the server:
+3.  Create a `.env` file and add the following environment variables:
+    ```
+    MONGO_URI=<your-mongodb-uri>
+    JWT_SECRET=<your-jwt-secret>
+    STRIPE_SECRET_KEY=<your-stripe-secret-key>
+    ```
+4.  Start the server:
     ```sh
     npm start
     ```
 
 ## API Endpoints
 
-### Authentication
+### User Routes
 
--   `POST /register`: Register a new user.
-    -   **Request Body**: `{ "username": "testuser", "email": "test@example.com", "password": "password123" }`
--   `POST /login`: Authenticate a user and return a JWT token.
-    -   **Request Body**: `{ "email": "test@example.com", "password": "password123" }`
+-   `POST /api/users/register`: Register a new user.
+-   `POST /api/users/login`: Authenticate a user and return a JWT token.
+-   `GET /api/users/profile`: Get the authenticated user’s profile.
+-   `PUT /api/users/profile`: Update the authenticated user’s profile.
 
-### Events
+### Event Routes
 
--   `GET /events`: Fetch a list of all events.
--   `POST /events`: Create a new event (authenticated users only).
-    -   **Headers**: `{ "Authorization": "Bearer <token>" }`
-    -   **Request Body**: `{ "title": "My Event", "description": "A cool event", "date": "2024-12-31", "time": "18:00", "location": "My Place" }`
+-   `GET /api/events`: List all events (supports pagination and filters).
+-   `GET /api/events/:id`: Get details of a specific event.
+-   `POST /api/events`: Create a new event.
+-   `PUT /api/events/:id`: Update an event.
+-   `DELETE /api/events/:id`: Delete an event.
 
-### RSVP
+### RSVP Routes
 
--   `POST /rsvp`: RSVP to an event (authenticated users only).
-    -   **Headers**: `{ "Authorization": "Bearer <token>" }`
-    -   **Request Body**: `{ "eventId": "<event-id>", "status": "going" }`
+-   `POST /api/events/:id/rsvp`: RSVP to an event.
+-   `GET /api/events/:id/rsvps`: Get the list of RSVPs for an event.
 
-### Real-Time Features (Socket.IO)
+### Payment Routes
 
--   **Chat**:
-    -   Join an event's chat room: `socket.emit('joinEvent', '<event-id>')`
-    -   Send a message: `socket.emit('chatMessage', { eventId: '<event-id>', message: 'Hello!' })`
--   **RSVP Notifications**:
-    -   RSVPs trigger a real-time notification to all users in the event room.
+-   `POST /api/payments/checkout`: Create a Stripe checkout session for a premium event.
+-   `GET /api/payments/:userId`: Get payment history for the authenticated user.

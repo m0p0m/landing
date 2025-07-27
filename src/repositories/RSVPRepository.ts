@@ -10,7 +10,7 @@ class RSVPRepository {
     return RSVP.findOne({ user: userId, event: eventId });
   }
 
-  async findByEvent(eventId: Schema.Types.ObjectId): Promise<IRSVP[]> {
+  async findByEvent(eventId: string): Promise<IRSVP[]> {
     return RSVP.find({ event: eventId }).populate('user', 'username');
   }
 }
