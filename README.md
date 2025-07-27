@@ -31,7 +31,7 @@ The project follows clean architecture with the following layers:
 
 1.  Clone the repository:
     ```sh
-    git clone <repository-url>
+    git clone https://github.com/m0p0m/landing.git
     ```
 2.  Install the dependencies:
     ```sh
