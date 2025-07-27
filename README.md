@@ -1,6 +1,6 @@
-# Comprehensive Real-Time Event Management Platform API
+# Enhanced Real-Time Event Management Platform API
 
-This is a robust, production-ready RESTful API for an event management platform. The platform allows users to create, manage, and RSVP to events, participate in real-time event-specific chats, manage their profiles, and process payments for premium events.
+This is a robust, production-ready RESTful API for an event management platform that enables users to create, manage, and RSVP to events, participate in real-time event-specific chats, manage their profiles, process payments for premium events, and receive notifications.
 
 ## Technologies
 
@@ -11,6 +11,7 @@ This is a robust, production-ready RESTful API for an event management platform.
 -   **Socket.IO**: For real-time chat and RSVP notifications.
 -   **JWT**: For secure user authentication.
 -   **Stripe**: For payment processing.
+-   **Nodemailer**: For email notifications.
 
 ## Getting Started
 
@@ -19,6 +20,7 @@ This is a robust, production-ready RESTful API for an event management platform.
 -   Node.js
 -   MongoDB
 -   Stripe Account
+-   Gmail Account (for Nodemailer)
 
 ### Installation
 
@@ -35,6 +37,8 @@ This is a robust, production-ready RESTful API for an event management platform.
     MONGO_URI=<your-mongodb-uri>
     JWT_SECRET=<your-jwt-secret>
     STRIPE_SECRET_KEY=<your-stripe-secret-key>
+    EMAIL_USER=<your-gmail-address>
+    EMAIL_PASS=<your-gmail-password>
     ```
 4.  Start the server:
     ```sh
@@ -43,27 +47,35 @@ This is a robust, production-ready RESTful API for an event management platform.
 
 ## API Endpoints
 
-### User Routes
+All routes are prefixed with `/api`.
 
--   `POST /api/users/register`: Register a new user.
--   `POST /api/users/login`: Authenticate a user and return a JWT token.
--   `GET /api/users/profile`: Get the authenticated user’s profile.
--   `PUT /api/users/profile`: Update the authenticated user’s profile.
+### User Routes (`/users`)
 
-### Event Routes
+-   `POST /register`: Register a new user.
+-   `POST /login`: Authenticate a user and return a JWT token.
+-   `GET /profile`: Get the authenticated user’s profile.
+-   `PUT /profile`: Update the authenticated user’s profile.
+-   `POST /password-reset`: Request a password reset.
 
--   `GET /api/events`: List all events (supports pagination and filters).
--   `GET /api/events/:id`: Get details of a specific event.
--   `POST /api/events`: Create a new event.
--   `PUT /api/events/:id`: Update an event.
--   `DELETE /api/events/:id`: Delete an event.
+### Event Routes (`/events`)
 
-### RSVP Routes
+-   `GET /`: List all events (supports pagination and filters).
+-   `GET /search`: Search for events.
+-   `GET /:id`: Get details of a specific event.
+-   `POST /`: Create a new event.
+-   `PUT /:id`: Update an event.
+-   `DELETE /:id`: Delete an event.
 
--   `POST /api/events/:id/rsvp`: RSVP to an event.
--   `GET /api/events/:id/rsvps`: Get the list of RSVPs for an event.
+### RSVP Routes (`/events/:id/rsvps`)
 
-### Payment Routes
+-   `POST /`: RSVP to an event.
+-   `GET /`: Get the list of RSVPs for an event.
 
--   `POST /api/payments/checkout`: Create a Stripe checkout session for a premium event.
--   `GET /api/payments/:userId`: Get payment history for the authenticated user.
+### Payment Routes (`/payments`)
+
+-   `POST /checkout`: Create a Stripe checkout session for a premium event.
+-   `GET /history`: Get payment history for the authenticated user.
+
+### Chat Routes (`/events/:id/messages`)
+
+-   `GET /`: Get chat history for an event.
