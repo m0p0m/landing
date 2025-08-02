@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import ProcessPayment from '../use-cases/payment/ProcessPayment';
-import GetPaymentHistory from '../use-cases/payment/GetPaymentHistory';
+import ProcessPaymentUseCase from '../use-cases/payment/process-payment.usecase';
+import GetPaymentHistoryUseCase from '../use-cases/payment/get-payment-history.usecase';
 import { Schema } from 'mongoose';
 
 interface AuthRequest extends Request {
@@ -10,24 +10,23 @@ interface AuthRequest extends Request {
 class PaymentController {
   async checkout(req: AuthRequest, res: Response): Promise<Response> {
     try {
-      const { eventId, paymentMethodId } = req.body;
-      const paymentIntent = await ProcessPayment.execute(
+      const { eventId } = req.body;
+      const session = await ProcessPaymentUseCase.execute(
         req.user!.id as unknown as Schema.Types.ObjectId,
-        eventId,
-        paymentMethodId
+        eventId
       );
-      return res.json(paymentIntent);
+      return res.json({ url: session.url });
     } catch (error) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ error: (error as Error).message });
     }
   }
 
   async getHistory(req: AuthRequest, res: Response): Promise<Response> {
     try {
-      const payments = await GetPaymentHistory.execute(req.user!.id);
+      const payments = await GetPaymentHistoryUseCase.execute(req.user!.id);
       return res.json(payments);
     } catch (error) {
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: (error as Error).message });
     }
   }
 }
