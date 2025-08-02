@@ -13,14 +13,8 @@ export const setupSocket = (server: http.Server) => {
       socket.join(eventId);
     });
 
-    socket.on('chatMessage', async (data) => {
-      const { eventId, userId, content } = data;
-      const message = await SendMessageUseCase.execute(
-        userId as Schema.Types.ObjectId,
-        eventId as Schema.Types.ObjectId,
-        content
-      );
-      io.to(eventId).emit('chatMessage', message);
+    socket.on('chatMessage', (data) => {
+      // This is now handled by the ChatController
     });
 
     socket.on('rsvp', (data) => {

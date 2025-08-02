@@ -9,6 +9,7 @@ export interface IEvent extends Document {
   category: string;
   tags: string[];
   isPremium: boolean;
+  price: number;
   createdBy: Schema.Types.ObjectId;
 }
 
@@ -21,6 +22,7 @@ const EventSchema = new Schema<IEvent>({
   category: { type: String, required: true },
   tags: [{ type: String }],
   isPremium: { type: Boolean, default: false },
+  price: { type: Number, default: 0 },
   createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 });
 

@@ -1,17 +1,12 @@
 import { Router } from 'express';
-import { authMiddleware } from '../utils/AuthMiddleware';
-import GetMessagesUseCase from '../use-cases/chat/get-messages.usecase';
-import { Schema } from 'mongoose';
+import { authMiddleware } from '../utils/auth.middleware';
+import ChatController from '../controllers/chat.controller';
+import { validateChatMessage } from '../utils/validation.middleware';
 
 const router = Router({ mergeParams: true });
 
-router.get('/', authMiddleware, async (req, res) => {
-  try {
-    const messages = await GetMessagesUseCase.execute(req.params.id as unknown as Schema.Types.ObjectId);
-    res.json(messages);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.get('/', authMiddleware, ChatController.getMessages);
+router.post('/', authMiddleware, validateChatMessage, ChatController.sendMessage);
+router.delete('/:messageId', authMiddleware, ChatController.deleteMessage);
 
 export default router;

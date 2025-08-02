@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import UserRepository from '../../repositories/user.repository';
 import { IUser } from '../../entities/user.entity';
+import { env } from '../../config/env.config';
 
 class LoginUserUseCase {
   async execute(credentials: Partial<IUser>): Promise<{ token: string }> {
@@ -21,7 +22,7 @@ class LoginUserUseCase {
       throw new Error('Invalid credentials');
     }
 
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET as string, {
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, env.jwt.secret, {
       expiresIn: '1h',
     });
 

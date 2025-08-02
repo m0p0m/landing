@@ -1,39 +1,46 @@
 import Stripe from 'stripe';
-import PaymentRepository from '../../repositories/payment.repository';
+import { env } from '../../config/env.config';
 import EventRepository from '../../repositories/event.repository';
 import { Schema } from 'mongoose';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: '2022-11-15',
+const stripe = new Stripe(env.stripe.secretKey, {
+  apiVersion: undefined,
 });
 
 class ProcessPaymentUseCase {
   async execute(
     userId: Schema.Types.ObjectId,
-    eventId: string,
-    paymentMethodId: string
-  ): Promise<any> {
+    eventId: string
+  ): Promise<Stripe.Checkout.Session> {
     const event = await EventRepository.findById(eventId);
-    if (!event || !event.isPremium) {
-      throw new Error('This is not a premium event');
+    if (!event) {
+      throw new Error('Event not found');
     }
 
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: 1000, // Example amount
-      currency: 'usd',
-      payment_method: paymentMethodId,
-      confirm: true,
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: event.title,
+            },
+            unit_amount: event.price * 100,
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: `${env.clientUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${env.clientUrl}/payment-cancel`,
+      metadata: {
+        userId: userId.toString(),
+        eventId: eventId,
+      },
     });
 
-    await PaymentRepository.create({
-      user: userId,
-      event: event.id,
-      amount: paymentIntent.amount / 100,
-      stripePaymentId: paymentIntent.id,
-      status: paymentIntent.status,
-    });
-
-    return paymentIntent;
+    return session;
   }
 }
 

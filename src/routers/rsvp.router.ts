@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import RSVPController from '../controllers/RSVPController';
-import { authMiddleware } from '../utils/AuthMiddleware';
+import RSVPController from '../controllers/rsvp.controller';
+import { authMiddleware } from '../utils/auth.middleware';
 
 const router = Router({ mergeParams: true });
 

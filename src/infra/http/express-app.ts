@@ -10,6 +10,7 @@ import eventRouter from '../../routers/event.router';
 import rsvpRouter from '../../routers/rsvp.router';
 import paymentRouter from '../../routers/payment.router';
 import chatRouter from '../../routers/chat.router';
+import stripeWebhookRouter from '../../routers/stripe.webhook.router';
 
 const app = express();
 const server = http.createServer(app);
@@ -18,6 +19,11 @@ const io = setupSocket(server);
 connectDB();
 
 app.use(express.json());
+
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -31,6 +37,7 @@ app.use('/api/events', eventRouter);
 app.use('/api/events/:id/rsvps', rsvpRouter);
 app.use('/api/payments', paymentRouter);
 app.use('/api/events/:id/messages', chatRouter);
+app.use('/api/stripe/webhook', stripeWebhookRouter);
 
 app.get('/api/health', (req, res) => res.status(200).send('OK'));
 

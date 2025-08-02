@@ -16,6 +16,18 @@ class UserRepository {
   async update(id: string, user: Partial<IUser>): Promise<IUser | null> {
     return User.findByIdAndUpdate(id, user, { new: true });
   }
+
+  async findByPasswordResetToken(token: string): Promise<IUser | null> {
+    return User.findOne({ passwordResetToken: token });
+  }
+
+  async findAll(): Promise<IUser[]> {
+    return User.find();
+  }
+
+  async delete(id: string): Promise<void> {
+    await User.findByIdAndDelete(id);
+  }
 }
 
 export default new UserRepository();
