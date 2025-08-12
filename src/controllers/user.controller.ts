@@ -1,12 +1,6 @@
 import { Request, Response } from 'express';
-import RegisterUserUseCase from '../use-cases/user/register-user.usecase';
-import LoginUserUseCase from '../use-cases/user/login-user.usecase';
-import UpdateProfileUseCase from '../use-cases/user/update-profile.usecase';
-import GetProfileUseCase from '../use-cases/user/get-profile.usecase';
-import RequestPasswordResetUseCase from '../use-cases/user/request-password-reset.usecase';
-import ConfirmPasswordResetUseCase from '../use-cases/user/confirm-password-reset.usecase';
-import GetAllUsersUseCase from '../use-cases/user/get-all-users.usecase';
-import DeleteUserUseCase from '../use-cases/user/delete-user.usecase';
+import { UserService } from '../services/user.service';
+import { config } from '../config';
 
 interface AuthRequest extends Request {
   user?: { id: string; email: string; role: string };
@@ -15,7 +9,7 @@ interface AuthRequest extends Request {
 class UserController {
   async register(req: Request, res: Response): Promise<Response> {
     try {
-      const { user, token } = await RegisterUserUseCase.execute(req.body);
+      const { user, token } = await UserService.register(req.body);
       return res.status(201).json({ user, token });
     } catch (error) {
       return res.status(400).json({ error: (error as Error).message });
@@ -24,16 +18,38 @@ class UserController {
 
   async login(req: Request, res: Response): Promise<Response> {
     try {
-      const { token } = await LoginUserUseCase.execute(req.body);
-      return res.json({ token });
+      const { accessToken, refreshToken } = await UserService.login(req.body);
+      res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: config.nodeEnv === 'production' });
+      return res.json({ accessToken });
     } catch (error) {
       return res.status(401).json({ error: (error as Error).message });
     }
   }
 
+  async refresh(req: Request, res: Response): Promise<Response> {
+    try {
+      const { refreshToken } = req.cookies;
+      const { accessToken } = await UserService.refresh(refreshToken);
+      return res.json({ accessToken });
+    } catch (error) {
+      return res.status(401).json({ error: (error as Error).message });
+    }
+  }
+
+  async logout(req: Request, res: Response): Promise<Response> {
+    try {
+      const { refreshToken } = req.cookies;
+      await UserService.logout(refreshToken);
+      res.clearCookie('refreshToken');
+      return res.status(204).send();
+    } catch (error) {
+      return res.status(400).json({ error: (error as Error).message });
+    }
+  }
+
   async getProfile(req: AuthRequest, res: Response): Promise<Response> {
     try {
-      const user = await GetProfileUseCase.execute(req.user!.id);
+      const user = await UserService.getProfile(req.user!.id);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
@@ -45,7 +61,7 @@ class UserController {
 
   async updateProfile(req: AuthRequest, res: Response): Promise<Response> {
     try {
-      const user = await UpdateProfileUseCase.execute(req.user!.id, req.body);
+      const user = await UserService.updateProfile(req.user!.id, req.body);
       return res.json(user);
     } catch (error) {
       return res.status(400).json({ error: (error as Error).message });
@@ -54,8 +70,8 @@ class UserController {
 
   async requestPasswordReset(req: Request, res: Response): Promise<Response> {
     try {
-      await RequestPasswordResetUseCase.execute(req.body.email);
-      return res.status(200).json({ message: 'Password reset email sent' });
+      await UserService.requestPasswordReset(req.body.email);
+      return res.status(200).json({ message: 'Password reset request sent' });
     } catch (error) {
       return res.status(400).json({ error: (error as Error).message });
     }
@@ -64,7 +80,7 @@ class UserController {
   async confirmPasswordReset(req: Request, res: Response): Promise<Response> {
     try {
       const { token, password } = req.body;
-      await ConfirmPasswordResetUseCase.execute(token, password);
+      await UserService.resetPassword(token, password);
       return res.status(200).json({ message: 'Password has been reset' });
     } catch (error) {
       return res.status(400).json({ error: (error as Error).message });
@@ -73,7 +89,7 @@ class UserController {
 
   async getAllUsers(req: Request, res: Response): Promise<Response> {
     try {
-      const users = await GetAllUsersUseCase.execute();
+      const users = await UserService.getAllUsers();
       return res.json(users);
     } catch (error) {
       return res.status(500).json({ error: (error as Error).message });
@@ -82,7 +98,7 @@ class UserController {
 
   async deleteUser(req: Request, res: Response): Promise<Response> {
     try {
-      await DeleteUserUseCase.execute(req.params.id);
+      await UserService.deleteUser(req.params.id);
       return res.status(204).send();
     } catch (error) {
       return res.status(500).json({ error: (error as Error).message });
